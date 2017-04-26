@@ -11,4 +11,5 @@ stack *creat_stack(int n);
 int stack_empty(stack *mystack);
 int push(stack *mystack,int x);
 int pop(stack *mystack);
+int stack_delete(stack* mystack);
 #endif

@@ -20,6 +20,22 @@ int push(stack *mystack,int x){
 		mystack->s[temp]=x;
 		return x;
 	}
+	else{
+		int *deleted=mystack->s;
+		int n=mystack->n;
+		int *s_new=(int*)malloc(2*n*sizeof(int));
+		for(int i=0;i<n;i++)
+			s_new[i]=deleted[i];
+		mystack->top++;
+		s_new[n]=x;
+		mystack->s=s_new;
+		mystack->n=2*n;
+		free(deleted);
+		return x;
+	}
+}
+int stack_delete(stack* mystack){
+	free(mystack);
 }
 int pop(stack *mystack){
 	if(!stack_empty(mystack)){
