@@ -138,14 +138,36 @@ c,e
 c,f
 2
 */
+/*
+5
+10
+a,b
+10
+a,d
+5
+b,d
+2
+d,b
+3
+b,c
+1
+d,e
+2
+c,e
+4
+e,c
+6
+d,c
+9
+e,a
+7
+*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #define INFINITE 100000
 #define MAXVEXDATA 100
 #define NIL -1
-
-
 
 typedef int EdgeWeight;
 typedef char VertexData;
@@ -213,8 +235,8 @@ void union_set(union_find_tree* x,union_find_tree * y);
 void link_set(union_find_tree* x,union_find_tree* y);
 Edge** MST_KRUSKAL(Graph *graph);
 void insert_edge_by_weight(Edge **a,int n);
-int extract_min(Vertex *queue,int n);
-int belong_queue(Vertex *queue,Vertex node,int n);
+int extract_min(Vertex **queue,int n);
+int belong_queue(Vertex **queue,Vertex node,int n);
 Edge **MST_PRIME(Graph *graph);
 
 Queue * creat_queue(int n){
@@ -605,16 +627,14 @@ void insert_edge_by_weight(Edge **a,int n){
 	}
 }
 Edge **MST_PRIME(Graph *graph){
-	Vertex *temp=(Vertex *)malloc((graph->num_nodes)*(sizeof(Vertex)));
+	Vertex **temp=(Vertex **)malloc((graph->num_nodes)*(sizeof(Vertex*)));
 	int n=graph->num_nodes;
 	for(int i=0;i<graph->num_nodes;i++){
-		temp[i]=graph->adjList[i];
+		temp[i]=&graph->adjList[i];
 		graph->adjList[i].key=INFINITE;
-		temp[i].key=INFINITE;
-		temp[i].parent=NIL;
 		graph->adjList[i].parent=NIL;
 	}
-	temp[0].key=0;
+	temp[0]->key=0;
 	while(n>0){
 		int u=extract_min(temp,n);
 		n--;
@@ -625,28 +645,26 @@ Edge **MST_PRIME(Graph *graph){
 			if((index!=-1)&&(p->edge_weight < node.key)){
 				graph->adjList[p->edge_end].parent=u;
 				graph->adjList[p->edge_end].key=p->edge_weight;
-				temp[index].parent=u;
-				temp[index].key=p->edge_weight;
 			}
 			p=p->next;
 		}
 	}
 
 }
-int belong_queue(Vertex *queue,Vertex node,int n){
+int belong_queue(Vertex **queue,Vertex node,int n){
 	for(int i=0;i<n;i++){
-		if(queue[i].data==node.data){
+		if(queue[i]->data==node.data){
 			return i;
 		}
 	}
 	return -1;
 }
-int extract_min(Vertex *queue,int n){
-	int min=queue[0].key;
+int extract_min(Vertex **queue,int n){
+	int min=queue[0]->key;
 	int min_index=0;
 	for(int i=0;i<n;i++){
-		if(min>queue[i].key){
-			min=queue[i].key;
+		if(min>queue[i]->key){
+			min=queue[i]->key;
 			min_index=i;
 		}
 	}
@@ -655,7 +673,20 @@ int extract_min(Vertex *queue,int n){
 	}
 	return min_index;
 }
-
+int extract_min_by_dis(Vertex **queue,int n){
+	int min=queue[0]->distance;
+	int min_index=0;
+	for(int i=0;i<n;i++){
+		if(min>queue[i]->distance){
+			min=queue[i]->distance;
+			min_index=queue[i]->data-'a';
+		}
+	}
+	for(int i=min_index;i<n-1;i++){
+		queue[i]=queue[i+1];
+	}
+	return min_index;
+}
 void initial_single_source(Graph *graph,int s){
 	for(int i=0;i<graph->num_nodes;i++){
 		graph->adjList[i].distance=INFINITE;
@@ -723,7 +754,32 @@ void DAG_SHORTEST_PATHS(Graph *graph,int s){
 }
 void find_critical_path(Graph* graph,int s){
 	//let all weight of each edge become -weight the run DAG_SHORTEST_PATHS
-	
+}
+void DIJKSTRA(Graph *graph,int s){
+	initial_single_source(graph,s);
+	Vertex **temp=(Vertex **)malloc((graph->num_nodes)*(sizeof(Vertex*)));
+	int n=graph->num_nodes;
+	for(int i=0;i<graph->num_nodes;i++){
+		temp[i]=&graph->adjList[i];
+
+	}
+	while(n>0){
+		int u=extract_min_by_dis(temp,n);
+		n--;
+		Edge *p=graph->adjList[u].edge;
+		while(p!=NULL){
+			relex(graph,p);
+			p=p->next;
+		}
+	}
+}
+void differencial_cons_solve(){
+
+}
+int ** differencial_matrix_to_adjlist(int **matric,int m,int n){
+	//m rows n colums
+	int num_nodes=m+1;
+	int num_edges=n+m;
 }
 int main()
 {
@@ -733,12 +789,13 @@ int main()
 	//if(BELLMAN_FORD(&mygraph,4)){
 	//	print_path(&mygraph,'e','b');	
 	//}
-	DAG_SHORTEST_PATHS(&mygraph,0);
+	//DAG_SHORTEST_PATHS(&mygraph,0);
+	DIJKSTRA(&mygraph,0);
 	//MST_KRUSKAL(&mygraph);
 	//MST_PRIME(&mygraph);
 	//strongly_connected_components(&mygraph);
 	//BFS(&mygraph,3);
-	print_path(&mygraph,'a','f');
+	print_path(&mygraph,'a','e');
 	
 	//strongly_connected_components(&mygraph);
 	//connected_components_by_union_find(&mygraph);
